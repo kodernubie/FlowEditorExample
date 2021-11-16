@@ -1,0 +1,621 @@
+<html>
+<head>
+    <script src="./flowbuilder.js"></script>
+
+    <script>
+        var flowbuilder
+        var activeId = undefined
+        var selected = null 
+        var numList = 0
+        var script
+
+        function init() {
+
+            flowbuilder = new FlowBuilder(document.getElementById("canvas"))
+
+            flowbuilder.onCreate = function(newComponent) {
+
+                clickActive("pointer")
+            }
+
+            flowbuilder.onSelect = function(selectedComponent) {
+
+                // hide old form
+                if (selected != selectedComponent) {
+
+                    if (selected != undefined) {
+
+                        if (document.getElementById("form" + selected.getType()) != null) {
+                        
+                            document.getElementById("form" + selected.getType()).style.display = "none"
+                        }
+                    } 
+                }
+
+                selected = selectedComponent
+                
+                // show form based on selected
+                if (selected != undefined) {
+
+                    if (document.getElementById("form" + selectedComponent.getType()) != null) {
+
+                        document.getElementById("form" + selectedComponent.getType()).style.display = ""
+                    } 
+                    
+                    switch (selected.getType()) {
+
+                        case "FlowSendMsg" :
+                                console.log("select FlowSendMsg")
+
+                                document.getElementById("txtSendMsgTo").value = selected.getTo()
+                                document.getElementById("txtSendMsgMsg").value = selected.getMsg()
+                                break;
+                        case "FlowHttpCall" :
+                                console.log("select FlowHttpCall")
+
+                                document.getElementById("txtHttpMethod").value = selected.getMethod()
+                                document.getElementById("txtHttpUrl").value = selected.getUrl()
+                                document.getElementById("txtHttpBodyType").value = selected.getBodyType()
+                                document.getElementById("txtHttpBody").value = selected.getBody()
+                                break;
+                        case "FlowSendButton" :
+                                console.log("select FlowSendButton")
+                                
+                                document.getElementById("txtSendBtnTo").value = selected.getTo()
+                                document.getElementById("txtSendBtnMsg").value = selected.getMsg()
+                                document.getElementById("txtSendBtnVar").value = selected.getVariable()
+
+                                var divBtn = document.getElementById("divButtons")
+                                
+                                var str = ""
+
+                                for (var i in selected.getButtons()) {
+
+                                    var idx = parseInt(i) + 1
+
+                                    str += `
+                                        <div id='frameBtn` + idx + `'>
+                                            <input type='text' id='Btn` + idx + `'  value='` + selected.getButtons()[i] + `'>
+                                        </div>
+                                    `
+                                }
+
+                                numList = selected.getButtons().length
+                                divBtn.innerHTML = str;
+                                break;
+                            case "FlowBranch" :
+                                console.log("select FlowBranch")
+                                
+                                var divBtn = document.getElementById("divConditions")
+                                
+                                var str = ""
+
+                                for (var i in selected.getConditions()) {
+
+                                    var idx = parseInt(i) + 1
+
+                                    str += `
+                                        <div id='frameCon` + idx + `'>
+                                            <input type='text' id='Con` + idx + `'  value='` + selected.getConditions()[i] + `'>
+                                        </div>
+                                    `
+                                }
+
+                                numList = selected.getConditions().length
+                                divBtn.innerHTML = str;
+                                break;
+                        case "FlowSendList" :
+                                console.log("select FlowSendList")
+                                
+                                document.getElementById("txtSendListTo").value = selected.getTo()
+                                document.getElementById("txtSendListMsg").value = selected.getMsg()
+                                document.getElementById("txtSendListTitle").value = selected.getListTitle()
+                                document.getElementById("txtSendListVar").value = selected.getVariable()
+
+                                var divBtn = document.getElementById("divList")
+                                
+                                var str = ""
+
+                                for (var i in selected.getList()) {
+
+                                    var idx = parseInt(i) + 1
+
+                                    str += `
+                                        <div id='frameList` + idx + `'>
+                                            <input type='text' id='List` + idx + `'  value='` + selected.getList()[i] + `'>
+                                        </div>
+                                    `
+                                }
+
+                                numList = selected.getList().length
+                                divBtn.innerHTML = str;
+                                break;
+                        case "FlowWaitResponse" :
+                                console.log("select FlowWaitResponse")
+
+                                document.getElementById("txtWaitVariable").value = selected.getVariable()
+                                document.getElementById("txtWaitDuration").value = selected.getDuration()
+                                break;
+                        case "FlowValidation" :
+                                console.log("select FlowValidation")
+
+                                document.getElementById("txtValidationVariable").value = selected.getVariable()
+                                document.getElementById("txtValidationPattern").value = selected.getPattern()
+                                document.getElementById("txtValidationCustom").value = selected.getCustomPattern()
+                                break;
+                    }
+                }
+            }
+
+            clickActive("pointer")
+        }
+
+        function clickActive(id) {
+
+            btn = document.getElementById(activeId);
+            if (btn != undefined) {
+
+                btn.className = ""
+            }
+
+            activeId = id
+            btn = document.getElementById(activeId)
+
+            if (btn != undefined) {
+
+                btn.className = "btnActive"
+                flowbuilder.setActiveComponent(id)
+            }
+        }
+
+        function getScript() {
+
+            script = flowbuilder.getScript()
+
+            script = script
+            .replace(/[\\]/g, '\\\\')
+            .replace(/[\"]/g, '\\\"')
+            .replace(/[\/]/g, '\\/')
+            .replace(/[\b]/g, '\\b')
+            .replace(/[\f]/g, '\\f')
+            .replace(/[\n]/g, '\\n')
+            .replace(/[\r]/g, '\\r')
+            .replace(/[\t]/g, '\\t');
+
+
+            console.log(script)
+        }
+
+        function loadScript() {
+
+            var sct =  "\n            {\n                \"flow\" : [\n         \n            {\n                \"type\" : \"FlowStart\",\n                \"id\" : \"START\",\n                \"left\" : 20,\n                \"top\" : 20,\n                \"data\" : {\n                    \"next\" : \"572e0954-f991-4f79-a615-bc6196cb75c9\"\n                }\n            }, \n            {\n                \"type\" : \"FlowEnd\",\n                \"id\" : \"END\",\n                \"left\" : 229,\n                \"top\" : 416,\n                \"data\" : \"\"\n            }, \n            {\n                \"type\" : \"FlowSendMsg\",\n                \"id\" : \"572e0954-f991-4f79-a615-bc6196cb75c9\",\n                \"left\" : 347,\n                \"top\" : 201,\n                \"data\" : {\n                    \"next\" : \"END\",\n                    \"to\" : \"Customer\",\n                    \"msg\" : \"Hello!\\n\\n\\ntset\"\n                }\n            }\n                ]\n            }\n        "
+            
+            // sct = sct
+            // .replace(/[\\]/g, '\\\\')
+            // .replace(/[\"]/g, '\\\"')
+            // .replace(/[\/]/g, '\\/')
+            // .replace(/[\b]/g, '\\b')
+            // .replace(/[\f]/g, '\\f')
+            // .replace(/[\n]/g, '\\n')
+            // .replace(/[\r]/g, '\\r')
+            // .replace(/[\t]/g, '\\t');
+
+            console.log(sct)
+
+            flowbuilder.loadScript(sct)
+        }
+        
+        function doClear() {
+
+            flowbuilder.init()
+        }
+
+        //------------------------------------------------------
+
+        function save() {
+
+            if (selected != null) {
+
+                switch (selected.getType()) {
+
+                    case "FlowSendMsg" :
+                                selected.setTo(document.getElementById("txtSendMsgTo").value)
+                                selected.setMsg(document.getElementById("txtSendMsgMsg").value)
+                                break; 
+                    case "FlowSendButton" :
+                                selected.setTo(document.getElementById("txtSendBtnTo").value)
+                                selected.setMsg(document.getElementById("txtSendBtnMsg").value)
+                                selected.setVariable(document.getElementById("txtSendBtnVar").value)
+                                
+                                var btns = []
+
+                                for (var i = 1; i <= numList; i++) {
+
+                                    btns.push(document.getElementById("Btn" + i).value)
+                                }
+
+                                selected.setButtons(btns)
+                                break;
+                    case "FlowBranch" :
+                                var btns = []
+
+                                for (var i = 1; i <= numList; i++) {
+
+                                    btns.push(document.getElementById("Con" + i).value)
+                                }
+
+                                selected.setConditions(btns)
+                                break;
+                    case "FlowSendList" :
+                                selected.setTo(document.getElementById("txtSendListTo").value)
+                                selected.setMsg(document.getElementById("txtSendListMsg").value)
+                                selected.setListTitle(document.getElementById("txtSendListTitle").value)
+                                selected.setVariable(document.getElementById("txtSendListVar").value)
+
+                                var btns = []
+
+                                for (var i = 1; i <= numList; i++) {
+
+                                    btns.push(document.getElementById("List" + i).value)
+                                }
+
+                                selected.setList(btns)
+                                break;
+                    case "FlowWaitResponse" :
+                                selected.setVariable(document.getElementById("txtWaitVariable").value)
+                                selected.setDuration(document.getElementById("txtWaitDuration").value)
+                                break; 
+                    case "FlowValidation" :
+                                selected.setVariable(document.getElementById("txtValidationVariable").value)
+                                selected.setPattern(document.getElementById("txtValidationPattern").value)
+                                selected.setCustomPattern(document.getElementById("txtValidationCustom").value)
+                                break;
+                    case "FlowHttpCall" :
+                                selected.setMethod(document.getElementById("txtHttpMethod").value)
+                                selected.setUrl(document.getElementById("txtHttpUrl").value)
+                                selected.setBody(document.getElementById("txtHttpBody").value)
+                                selected.setBodyType(document.getElementById("txtHttpBodyType").value)
+                                break; 
+                }
+            }
+        }
+
+        //-----------------------------------------------------------------------
+
+        function addButton() {
+
+            if (numList < 3) {
+
+                var divBtn = document.getElementById("divButtons")
+                numList++
+
+                btn = document.createElement("DIV")
+                btn.id = "frameBtn" + numList
+
+                btn.innerHTML = `<input type='text' id='Btn` + numList + `' value='Opt ` + numList + `'>`
+                divBtn.appendChild(btn)
+            } else {
+
+                alert("Maximum button is 3")
+            }
+        }
+
+        function delButton() {
+
+            if (numList > 0) {
+
+                var divBtn = document.getElementById("divButtons")
+                var btn = document.getElementById("frameBtn" + numList)
+                divBtn.removeChild(btn)
+
+                numList--
+            }
+        }
+
+        //-----------------------------------------------------------------------
+
+        function addCondition() {
+
+            var divBtn = document.getElementById("divConditions")
+            numList++
+
+            btn = document.createElement("DIV")
+            btn.id = "frameCon" + numList
+
+            btn.innerHTML = `<input type='text' id='Con` + numList + `' value='response == "Yes"'>`
+            divBtn.appendChild(btn)
+        }
+
+        function delCondition() {
+
+            if (numList > 0) {
+
+                var divBtn = document.getElementById("divConditions")
+                var btn = document.getElementById("frameCon" + numList)
+                divBtn.removeChild(btn)
+
+                numList--
+            }
+        }
+
+        //-----------------------------------------------------------------------
+        
+        function addList() {
+
+            if (numList < 20) {
+
+                var divBtn = document.getElementById("divList")
+                numList++
+
+                btn = document.createElement("DIV")
+                btn.id = "frameList" + numList
+
+                btn.innerHTML = `<input type='text' id='List` + numList + `' value='Opt ` + numList + `'>`
+                divBtn.appendChild(btn)
+            } else {
+
+                alert("Maximum Item is 20")
+            }
+        }
+
+        function delList() {
+
+            if (numList > 0) {
+
+                var divBtn = document.getElementById("divList")
+                var btn = document.getElementById("frameList" + numList)
+                divBtn.removeChild(btn)
+
+                numList--
+            }
+        }
+
+        function doReadOnly() {
+
+            flowbuilder.setReadOnly(true)
+        }
+
+        function doEditMode() {
+
+            flowbuilder.setReadOnly(false)
+        }
+
+        function doZoomOut() {
+
+            flowbuilder.zoomOut()
+        }
+
+        function doZoomIn() {
+
+            flowbuilder.zoomIn()
+        }
+
+        function doResetZoom() {
+
+            flowbuilder.resetZoom()
+        }
+
+    </script>
+    <style>
+        body {
+            margin: 0px; 
+            padding: 0px; 
+            overflow: hidden;
+            font-family: Helvetica, Arial, Sans-Serif;
+            font-size: 13px;
+        }
+
+        #header {
+            background-color: #FFFFFF;
+            width: 100%;
+            height: 60px;
+            border-bottom: 1px solid #999999;
+        }
+
+        #frame {
+            width: 100%;
+            height: calc(100% - 61px);
+            display: flex; 
+        }
+
+        #menu {
+            width: 220px; 
+            height: 100%;
+            display: inline-block;
+            background: #FFFFFF;
+            margin: 10px;
+            order: 1;
+            overflow-y: scroll;
+        }
+
+        #canvas {
+            height: 100%;
+            display: inline-block;
+            background: #cccccc;
+            order: 2;
+            flex: 1;  
+        }
+
+        .btnActive {
+            background-color: #2596be;
+        }
+
+        button {
+            margin-top: 4px;
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body onload="init()">
+    <div id="header">Flow Builder</div>
+    <div id="frame">
+        <div id="menu">
+            Menu<br>
+            <button onclick="clickActive('pointer')" id="pointer">Pointer</button><br>
+            <button onclick="clickActive('FlowSendMsg')" id="FlowSendMsg">Send Msg</button><br>
+            <button onclick="clickActive('FlowSendButton')" id="FlowSendButton">Send Button</button><br>
+            <button onclick="clickActive('FlowSendList')" id="FlowSendList">Send List</button><br>
+            <button onclick="clickActive('FlowWaitResponse')" id="FlowWaitResponse">Wait Response</button><br>
+            <button onclick="clickActive('FlowValidation')" id="FlowValidation">Validation</button><br>
+            <button onclick="clickActive('FlowBranch')" id="FlowBranch">Branch</button><br>
+            <button onclick="clickActive('FlowHttpCall')" id="FlowHttpCall">Http Call</button><br>
+            
+            <br>
+            <br>
+            <button onclick="doClear()">Clear</button>
+            <button onclick="getScript()">Get Script</button>
+            <button onclick="loadScript()">Load Script</button>
+            <br>
+                <button onclick="doReadOnly()">ReadOnly</button>
+                <button onclick="doEditMode()">Edit Mode</button>
+            <br>
+                <button onclick="doZoomOut()">Zoom Out</button>
+                <button onclick="doZoomIn()">Zoom In</button>
+                <button onclick="doResetZoom()">Reset</button>
+            <br>
+            <br>
+            <br>
+            <div id="formFlowSendMsg" style="display: none">
+                <div>
+                    To : <br><input id="txtSendMsgTo" type="text"></input>
+                </div>
+                <div>
+                    Message : <br><textarea id="txtSendMsgMsg" type="text" rows="5" style="width: 100%"></textarea>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowSendButton" style="display: none">
+                <div>
+                    To : <br><input id="txtSendBtnTo" type="text"></input>
+                </div>
+                <div>
+                    Var : <br><input id="txtSendBtnVar" type="text"></input>
+                </div>
+                <div>
+                    Message : <br><textarea id="txtSendBtnMsg" type="text" rows="5"></textarea>
+                </div>
+                <div>
+                    <br>Buttons :
+                </div>
+                <div id="divButtons">
+                    
+                </div>
+                <div>
+                    <button onclick="addButton()">Add Button</button>
+                    <button onclick="delButton()">Del Button</button>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowBranch" style="display: none">
+                <div>
+                    <br>Conditions :
+                </div>
+                <div id="divConditions">
+                    
+                </div>
+                <div>
+                    <button onclick="addCondition()">Add Condition</button>
+                    <button onclick="delCondition()">Del Condition</button>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowSendList" style="display: none">
+                <div>
+                    To : <br><input id="txtSendListTo" type="text"></input>
+                </div>
+                <div>
+                    Var : <br><input id="txtSendListVar" type="text"></input>
+                </div>
+                <div>
+                    Message : <br><textarea id="txtSendListMsg" type="text" rows="5"></textarea>
+                </div>
+                <div>
+                    List Title : <br><input id="txtSendListTitle" type="text"></input>
+                </div>
+                <div>
+                    <br>List :
+                </div>
+                <div id="divList">
+                    
+                </div>
+                <div>
+                    <button onclick="addList()">Add Item</button>
+                    <button onclick="delList()">Del Item</button>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowWaitResponse" style="display: none">
+                <div>
+                    Variable : <br><input id="txtWaitVariable" type="text"></input>
+                </div>
+                <div>
+                    Duration : <br><input id="txtWaitDuration" type="text"></input>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowValidation" style="display: none">
+                <div>
+                    Variable : <br><input id="txtValidationVariable" type="text"></input>
+                </div>
+                <div>
+                    Pattern : <br>
+                    <select name="cars" id="txtValidationPattern">
+                        <option value="PhoneNo">PhoneNo</option>
+                        <option value="Email">Email</option>
+                        <option value="Number">Number</option>
+                        <option value="URL">URL</option>
+                        <option value="Custom">Custom</option>
+                      </select></input>
+                </div>
+                <div>
+                    Custom Pattern : <br><input id="txtValidationCustom" type="text"></input>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+            <div id="formFlowHttpCall" style="display: none">
+                <div>
+                    Method : <br>
+                    <select id="txtHttpMethod">
+                        <option value="POST">POST</option>
+                        <option value="PUT">PUT</option>
+                        <option value="GET">GET</option>
+                        <option value="DELETE">DELETE</option>
+                      </select></input>
+                </div>
+                <div>
+                    URL : <br><input id="txtHttpUrl" type="text"></input>
+                </div>
+                <div>
+                    Body Type : <br>
+                    <select id="txtHttpBodyType">
+                        <option value="JSON">JSON</option>
+                        <option value="FORM">Form</option>
+                        <option value="NONE">None</option>
+                      </select></input>
+                </div>
+                <div>
+                    Body : <br><textarea id="txtHttpBody" rows="5" style="width: 100%"></textarea>
+                </div>
+                <div>
+                    <button onclick="save()">Save</button>
+                </div>
+            </div>
+        </div>
+        <div id="canvas">
+            canvas
+        </div>
+    </div>
+</body>
+</html>
